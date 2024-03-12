@@ -42,7 +42,11 @@ library(tibble)
 ```{r}
 # valid title used by API
 titles <- c("GM", "WGM", "IM", "WIM", "FM", "WFM", "NM", "WNM", "CM", "WCM")
+
+# URL that is used to retrive list of titled players
 chess_url_get_player_list <- "https://api.chess.com/pub/titled/"
+
+# URL that retrives player's informations based on username
 chess_url_get_player_info <- "https://api.chess.com/pub/player/"
 ```
 
@@ -50,7 +54,7 @@ chess_url_get_player_info <- "https://api.chess.com/pub/player/"
 
 scrap_url <- function(url) {
 
-  # Get 'content' of the GET method.
+  # Get 'content' section of the GET method applied to an URL
 
   url_content <- toJSON(
     fromJSON(content(GET(url), as = "text", encoding = "UTF-8")),
