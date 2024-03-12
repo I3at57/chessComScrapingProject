@@ -1,0 +1,100 @@
+---
+title: "scrapingChessCom"
+author: "Baptiste Toussaint"
+date: "2024-03-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Scraping Data from Chess.com API
+
+API's documentation :
+https://www.chess.com/news/view/published-data-api#pubapi-general
+
+This notebook scrap informations about titled players from *Chess.com*.
+Existing title are (see [article](https://www.chess.com/terms/chess-titles)
+about title):
+
+- Grandmaster (GM)
+- International Master (IM)
+- FIDE Master (FM)
+- Cadidate MAster (CM)
+- Woman Grandmaster (WGM)
+- Woman International Master (WIM)
+- Woman FIDE Master (WFM)
+- Woman Candidate Master (WCM)
+- National Master (NM)
+- Woman National Master (WNM)
+
+## Scraping
+
+```{r}
+# Library for web scraping
+library(httr)
+library(jsonlite)
+library(readr)
+library(tibble)
+```
+
+```{r}
+# valid title used by API
+titles <- c("GM", "WGM", "IM", "WIM", "FM", "WFM", "NM", "WNM", "CM", "WCM")
+chess_url_get_player_list <- "https://api.chess.com/pub/titled/"
+chess_url_get_player_info <- "https://api.chess.com/pub/player/"
+```
+
+```{r}
+
+scrap_url <- function(url) {
+
+  # Get 'content' of the GET method.
+
+  url_content <- toJSON(
+    fromJSON(content(GET(url), as = "text", encoding = "UTF-8")),
+    pretty = TRUE
+  )
+  
+  return(url_content)
+}
+
+retrieve_info_from_player_username <- function(username) {
+  
+  # Get all the information from one user
+  
+  return(
+    c(
+      fromJSON(scrap_url(paste(chess_url_get_player_info,username,sep=""))),
+      fromJSON(scrap_url(paste(chess_url_get_player_info,username,"/stats/",sep="")))
+    )
+  )
+}
+```
+
+```{r}
+# Get list of titled player from Chess.com
+players_list <- c()
+for (title in titles) {
+  players_list <- c(
+    players_list,
+    # fromJSON(scrap_url_to_json(paste(chess_url_get_player_list,title,sep="")))$player
+    fromJSON(scrap_url(paste(chess_url_get_player_list,title,sep="")))$player
+  )
+}
+```
+
+```{r}
+# Test JSON
+file_name <- "test.json"
+for (name in players_list) {
+  write(
+    toJSON(retrieve_info_from_player_username("hikaru"),pretty = TRUE),
+    file = file_name,
+    append = TRUE
+  )
+}
+```
+
+
